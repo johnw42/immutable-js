@@ -589,6 +589,22 @@ declare namespace Immutable {
     ): this;
 
     /**
+     * Returns a new List with only the values for which the `predicate`
+     * function returns false and a List with only the values for which
+     * `predicate` returns true.
+     *
+     * Note: `partition()` always returns two new instances.
+     */
+    partition<F extends T>(
+      predicate: (value: T, index: number, iter: this) => value is F,
+      context?: unknown
+    ): [List<T>, List<F>];
+    partition(
+      predicate: (value: T, index: number, iter: this) => unknown,
+      context?: unknown
+    ): [this, this];
+
+    /**
      * Returns a List "zipped" with the provided collection.
      *
      * Like `zipWith`, but using the default `zipper`: creating an `Array`.
@@ -1407,6 +1423,22 @@ declare namespace Immutable {
     ): this;
 
     /**
+     * Returns a new Map with only the entries for which the `predicate`
+     * function returns false and another with only the instances for which
+     * `predicate` returns true.
+     *
+     * Note: `partition()` always returns two new instances.
+     */
+    partition<F extends V>(
+      predicate: (value: V, key: K, iter: this) => value is F,
+      context?: unknown
+    ): [Map<K, V>, Map<K, F>];
+    partition(
+      predicate: (value: V, key: K, iter: this) => unknown,
+      context?: unknown
+    ): [this, this];
+
+    /**
      * @see Collection.Keyed.flip
      */
     flip(): Map<V, K>;
@@ -1573,6 +1605,22 @@ declare namespace Immutable {
       predicate: (value: V, key: K, iter: this) => unknown,
       context?: unknown
     ): this;
+
+    /**
+     * Returns a new OrderedMap with only the entries for which the `predicate`
+     * function returns false and another with only the entries for which
+     * `predicate` returns true.
+     *
+     * Note: `partition()` always returns two new instances.
+     */
+    partition<F extends V>(
+      predicate: (value: V, key: K, iter: this) => value is F,
+      context?: unknown
+    ): [OrderedMap<K, V>, OrderedMap<K, F>];
+    partition(
+      predicate: (value: V, key: K, iter: this) => unknown,
+      context?: unknown
+    ): [this, this];
 
     /**
      * @see Collection.Keyed.flip
@@ -1787,6 +1835,22 @@ declare namespace Immutable {
       predicate: (value: T, key: T, iter: this) => unknown,
       context?: unknown
     ): this;
+
+    /**
+     * Returns a new Set with only the values for which the `predicate` function
+     * returns false and another with only the values for which `predicate`
+     * function returns true.
+     *
+     * Note: `partition()` always returns two new instances.
+     */
+    partition<F extends T>(
+      predicate: (value: T, key: T, iter: this) => value is F,
+      context?: unknown
+    ): [Set<T>, Set<F>];
+    partition(
+      predicate: (value: T, key: T, iter: this) => unknown,
+      context?: unknown
+    ): [this, this];
   }
 
   /**
@@ -1886,6 +1950,22 @@ declare namespace Immutable {
       predicate: (value: T, key: T, iter: this) => unknown,
       context?: unknown
     ): this;
+
+    /**
+     * Returns a new OrderedSet with only the values for which the `predicate`
+     * function returns false and another with only the values for which
+     * `predicate` function returns true.
+     *
+     * Note: `partition()` always returns two new instances.
+     */
+    partition<F extends T>(
+      predicate: (value: T, key: T, iter: this) => value is F,
+      context?: unknown
+    ): [OrderedSet<T>, OrderedSet<F>];
+    partition(
+      predicate: (value: T, key: T, iter: this) => unknown,
+      context?: unknown
+    ): [this, this];
 
     /**
      * Returns an OrderedSet of the same type "zipped" with the provided
@@ -2136,6 +2216,22 @@ declare namespace Immutable {
       predicate: (value: T, index: number, iter: this) => unknown,
       context?: unknown
     ): this;
+
+    /**
+     * Returns a new Set with only the values for which the `predicate` function
+     * returns false and another with only the values for which `predicate`
+     * function returns true.
+     *
+     * Note: `partition()` always returns two new instances.
+     */
+    partition<F extends T>(
+      predicate: (value: T, index: number, iter: this) => value is F,
+      context?: unknown
+    ): [Set<T>, Set<F>];
+    partition(
+      predicate: (value: T, index: number, iter: this) => unknown,
+      context?: unknown
+    ): [this, this];
 
     /**
      * Returns a Stack "zipped" with the provided collections.
@@ -2480,7 +2576,7 @@ declare namespace Immutable {
     interface Factory<TProps extends object> {
       (values?: Partial<TProps> | Iterable<[string, unknown]>): Record<TProps> &
         Readonly<TProps>;
-      new (
+      new(
         values?: Partial<TProps> | Iterable<[string, unknown]>
       ): Record<TProps> & Readonly<TProps>;
 
@@ -2858,6 +2954,22 @@ declare namespace Immutable {
       ): this;
 
       /**
+       * Returns a new Seq with only the entries for which the `predicate`
+       * function returns false and another with only the entries for which
+       * `predicate` function returns true.
+       *
+       * Note: `parition()` always returns two new instances.
+       */
+      parition<F extends V>(
+        predicate: (value: V, key: K, iter: this) => value is F,
+        context?: unknown
+      ): [Seq.Keyed<K, V>, Seq.Keyed<K, F>];
+      parition(
+        predicate: (value: V, key: K, iter: this) => unknown,
+        context?: unknown
+      ): [this, this];
+
+      /**
        * @see Collection.Keyed.flip
        */
       flip(): Seq.Keyed<V, K>;
@@ -2957,6 +3069,23 @@ declare namespace Immutable {
         predicate: (value: T, index: number, iter: this) => unknown,
         context?: unknown
       ): this;
+
+      /**
+       * Returns a new Seq with only the values for which the `predicate`
+       * function returns false and another with only the values for which
+       * `predicate` function returns true.
+       *
+       * Note: `partition()` always returns two new instances, even if one of
+       * the returned instances is equal to this.
+       */
+      partition<F extends T>(
+        predicate: (value: T, index: number, iter: this) => value is F,
+        context?: unknown
+      ): [Seq.Indexed<T>, Seq.Indexed<F>];
+      partition(
+        predicate: (value: T, index: number, iter: this) => unknown,
+        context?: unknown
+      ): [this, this];
 
       /**
        * Returns a Seq "zipped" with the provided collections.
@@ -3120,6 +3249,23 @@ declare namespace Immutable {
         context?: unknown
       ): this;
 
+      /**
+       * Returns a new Seq with only the values for which the `predicate`
+       * function returns false and another with only the values for which
+       * `predicate` function returns true.
+       *
+       * Note: `partition()` always returns two new instances, even if one of
+       * the returned instances is equal to this.
+       */
+      partition<F extends T>(
+        predicate: (value: T, key: T, iter: this) => value is F,
+        context?: unknown
+      ): [Seq.Set<T>, Seq.Set<F>];
+      partition(
+        predicate: (value: T, key: T, iter: this) => unknown,
+        context?: unknown
+      ): [this, this];
+
       [Symbol.iterator](): IterableIterator<T>;
     }
   }
@@ -3264,6 +3410,23 @@ declare namespace Immutable {
       predicate: (value: V, key: K, iter: this) => unknown,
       context?: unknown
     ): this;
+
+    /**
+     * Returns a new Seq with only the values for which the `predicate`
+     * function returns false and another with only the values for which
+     * `predicate` function returns true.
+     *
+     * Note: `partition()` always returns two new instances, even if one of
+     * the returned instances is equal to this.
+     */
+    partition<F extends V>(
+      predicate: (value: V, key: K, iter: this) => value is F,
+      context?: unknown
+    ): [Seq<K, V>, Seq<K, F>];
+    partition(
+      predicate: (value: V, key: K, iter: this) => unknown,
+      context?: unknown
+    ): [this, this];
   }
 
   /**
@@ -3469,6 +3632,23 @@ declare namespace Immutable {
         predicate: (value: V, key: K, iter: this) => unknown,
         context?: unknown
       ): this;
+
+      /**
+       * Returns a new Collection with only the values for which the `predicate`
+       * function returns false and another with only the values for which
+       * `predicate` function returns true.
+       *
+       * Note: `partition()` always returns two new instances, even if one of the
+       * returned instances is equal to this.
+       */
+      partition<F extends V>(
+        predicate: (value: V, key: K, iter: this) => value is F,
+        context?: unknown
+      ): [Collection.Keyed<K, V>, Collection.Keyed<K, F>];
+      partition(
+        predicate: (value: V, key: K, iter: this) => unknown,
+        context?: unknown
+      ): [this, this];
 
       [Symbol.iterator](): IterableIterator<[K, V]>;
     }
@@ -3767,6 +3947,23 @@ declare namespace Immutable {
         context?: unknown
       ): this;
 
+      /**
+       * Returns a new Collection with only the values for which the `predicate`
+       * function returns false and another with only the values for which
+       * `predicate` function returns true.
+       *
+       * Note: `partition()` always returns two new instances, even if one of the
+       * returned instances is equal to this.
+       */
+      partition<F extends T>(
+        predicate: (value: T, index: number, iter: this) => value is F,
+        context?: unknown
+      ): [Collection.Indexed<T>, Collection.Indexed<F>];
+      partition(
+        predicate: (value: T, index: number, iter: this) => unknown,
+        context?: unknown
+      ): [this, this];
+
       [Symbol.iterator](): IterableIterator<T>;
     }
 
@@ -3868,6 +4065,23 @@ declare namespace Immutable {
         predicate: (value: T, key: T, iter: this) => unknown,
         context?: unknown
       ): this;
+
+      /**
+       * Returns a new Collection with only the values for which the `predicate`
+       * function returns false and another with only the values for which
+       * `predicate` function returns true.
+       *
+       * Note: `partition()` always returns two new instances, even if one of the
+       * returned instances is equal to this.
+       */
+      partition<F extends T>(
+        predicate: (value: T, key: T, iter: this) => value is F,
+        context?: unknown
+      ): [Collection.Set<T>, Collection.Set<F>];
+      partition(
+        predicate: (value: T, key: T, iter: this) => unknown,
+        context?: unknown
+      ): [this, this];
 
       [Symbol.iterator](): IterableIterator<T>;
     }
@@ -4279,6 +4493,23 @@ declare namespace Immutable {
       predicate: (value: V, key: K, iter: this) => unknown,
       context?: unknown
     ): this;
+
+    /**
+     * Returns a new Collection with only the values for which the `predicate`
+     * function returns false and another with only the values for which
+     * `predicate` function returns true.
+     *
+     * Note: `partition()` always returns two new instances, even if one of the
+     * returned instances is equal to this.
+     */
+    partition<F extends V>(
+      predicate: (value: V, key: K, iter: this) => value is F,
+      context?: unknown
+    ): [Collection<K,V>, Collection<K, F>];
+    partition(
+      predicate: (value: V, key: K, iter: this) => unknown,
+      context?: unknown
+    ): [this,this];
 
     /**
      * Returns a new Collection of the same type with only the entries for which
