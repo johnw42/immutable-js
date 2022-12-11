@@ -2958,13 +2958,13 @@ declare namespace Immutable {
        * function returns false and another with only the entries for which
        * `predicate` function returns true.
        *
-       * Note: `parition()` always returns two new instances.
+       * Note: `partition()` always returns two new instances.
        */
-      parition<F extends V>(
+      partition<F extends V>(
         predicate: (value: V, key: K, iter: this) => value is F,
         context?: unknown
       ): [Seq.Keyed<K, V>, Seq.Keyed<K, F>];
-      parition(
+      partition(
         predicate: (value: V, key: K, iter: this) => unknown,
         context?: unknown
       ): [this, this];
@@ -3419,10 +3419,10 @@ declare namespace Immutable {
      * Note: `partition()` always returns two new instances, even if one of
      * the returned instances is equal to this.
      */
-    partition<F extends V>(
-      predicate: (value: V, key: K, iter: this) => value is F,
-      context?: unknown
-    ): [Seq<K, V>, Seq<K, F>];
+    // partition<F extends V>(
+    //   predicate: (value: V, key: K, iter: this) => value is F,
+    //   context?: unknown
+    // ): [Seq<K, V>, Seq<K, F>];
     partition(
       predicate: (value: V, key: K, iter: this) => unknown,
       context?: unknown
@@ -3641,10 +3641,10 @@ declare namespace Immutable {
        * Note: `partition()` always returns two new instances, even if one of the
        * returned instances is equal to this.
        */
-      partition<F extends V>(
-        predicate: (value: V, key: K, iter: this) => value is F,
-        context?: unknown
-      ): [Collection.Keyed<K, V>, Collection.Keyed<K, F>];
+      // partition<F extends V>(
+      //   predicate: (value: V, key: K, iter: this) => value is F,
+      //   context?: unknown
+      // ): [Collection.Keyed<K, V>, Collection.Keyed<K, F>];
       partition(
         predicate: (value: V, key: K, iter: this) => unknown,
         context?: unknown

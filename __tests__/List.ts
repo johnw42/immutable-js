@@ -571,7 +571,11 @@ describe('List', () => {
 
   it('partitions values', () => {
     const v = List.of('a', 'b', 'c', 'd', 'e', 'f');
-    const [r0,r1] = v.partition((value, index) => index % 2 === 1);
+    let callCount = 0;
+    const [r0, r1] = v.partition((value, index) => {
+      ++callCount;
+      return index % 2 === 1;
+    });
     expect(r0.toArray()).toEqual(['a', 'c', 'e']);
     expect(r1.toArray()).toEqual(['b', 'd', 'f']);
   });

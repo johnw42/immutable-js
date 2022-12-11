@@ -63,7 +63,9 @@ describe('ArraySequence', () => {
     expect(seq.take(2).toArray().length).toBe(2);
     expect(seq.take(5).toArray().length).toBe(5);
     expect(seq.filter(x => x % 2 === 1).toArray().length).toBe(2);
-    expect(seq.partition(x => x % 2 === 1).toArray().map(x => x.toArray())).toEqual([2], [1, 3]);
+    expect(seq.filter(x => x % 2 === 0).toArray()).toEqual([2]);
+    expect(seq.filter(x => x % 2 === 1).toArray()).toEqual([1, 3]);
+    expect(seq.partition(x => x % 2 === 1).map(x => x.toArray())).toEqual([[2], [1, 3]]);
     expect(seq.toKeyedSeq().flip().size).toBe(10);
     expect(seq.toKeyedSeq().flip().flip().size).toBe(10);
     expect(seq.toKeyedSeq().flip().flip().toArray().length).toBe(10);

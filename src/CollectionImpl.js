@@ -64,6 +64,7 @@ import {
   sortFactory,
   maxFactory,
   zipWithFactory,
+  partitionFactory,
 } from './Operations';
 import { getIn } from './methods/getIn';
 import { hasIn } from './methods/hasIn';
@@ -208,26 +209,57 @@ mixin(Collection, {
   },
 
   partition(predicate, context) {
-    const results = [];
-    const r0 = reify(
-      this,
-      filterFactory(
-        this,
-        x => {
-          const result = predicate(x);
-          results.push(result);
-          return !result;
-        },
-        context,
-        true
-      )
-    );
-    results.reverse();
-    const r1 = reify(
-      this,
-      filterFactory(this, () => results.pop(), context, true)
-    );
-    return [r0, r1];
+    const groups = this.groupBy((...args) => predicate.call(context, ...args));
+    return [
+      groups.get(false) || reify(this, []),
+      groups.get(true) || reify(this, []),
+    ];
+
+    // return partitionFactory(this, predicate, context, true).map(x =>
+    //   reify(this, x)
+    // );
+
+    // // Cache of predicate results by input position in order to prevent the
+    // // predicate being evaluated twice per value.
+    // const predicateResults = [];
+
+    // // Counters recording the position in the input sequence as each item of the
+    // // output sequences is generated.  The counter with the higher value is
+    // // always equal to the length of `predicateResults`.
+    // let counter0 = 0;
+    // let counter1 = 0;
+
+    // const r0 = reify(
+    //   this,
+    //   filterFactory(
+    //     this,
+    //     (v, k, c) => {
+    //       // if (counter0 === predicateResults.length) {
+    //       //   predicateResults.push(predicate(x));
+    //       // }
+    //       // return !predicateResults[counter0++];
+    //       return !predicate.call(context, v, k, c);
+    //     },
+    //     context,
+    //     true
+    //   )
+    // );
+    // const r1 = reify(
+    //   this,
+    //   filterFactory(
+    //     this,
+    //     (v, k, c) => {
+    //       // if (counter1 === predicateResults.length) {
+    //       //   predicateResults.push(predicate(x));
+    //       // }
+    //       // return predicateResults[counter1++];
+    //       return predicate.call(context, v, k, c);
+    //     },
+    //     context,
+    //     true
+    //   )
+    // );
+    // return [r0, r1];
   },
 
   find(predicate, context, notSetValue) {
@@ -570,6 +602,17 @@ mixin(IndexedCollection, {
 
   filter(predicate, context) {
     return reify(this, filterFactory(this, predicate, context, false));
+  },
+
+  partition(predicate, context) {
+    // return partitionFactory(this, predicate, context, false).map(x =>
+    //   reify(this, x)
+    // );
+    const groups = this.groupBy((...args) => predicate.call(context, ...args));
+    return [
+      groups.get(false) || reify(this, []),
+      groups.get(true) || reify(this, []),
+    ];
   },
 
   findIndex(predicate, context) {

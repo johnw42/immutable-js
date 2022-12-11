@@ -368,6 +368,102 @@ export function filterFactory(collection, predicate, context, useKeys) {
   return filterSequence;
 }
 
+export function partitionFactory(collection, predicate, context, useKeys) {
+  return [
+    filterFactory.call(
+      this,
+      collection,
+      function (...args) {
+        return !predicate.call(this, ...args);
+      },
+      context,
+      useKeys
+    ),
+    filterFactory.call(this, collection, predicate, context, useKeys),
+  ];
+  // const filterSequence0 = makeSequence(collection);
+  // const filterSequence1 = makeSequence(collection);
+  // if (useKeys) {
+  //   filterSequence0.has = key => {
+  //     const v = collection.get(key, NOT_SET);
+  //     return v !== NOT_SET && !predicate.call(context, v, key, collection);
+  //   };
+  //   filterSequence0.get = (key, notSetValue) => {
+  //     const v = collection.get(key, NOT_SET);
+  //     return v !== NOT_SET && !predicate.call(context, v, key, collection)
+  //       ? v
+  //       : notSetValue;
+  //   };
+  //   filterSequence1.has = key => {
+  //     const v = collection.get(key, NOT_SET);
+  //     return v !== NOT_SET && !!predicate.call(context, v, key, collection);
+  //   };
+  //   filterSequence1.get = (key, notSetValue) => {
+  //     const v = collection.get(key, NOT_SET);
+  //     return v !== NOT_SET && predicate.call(context, v, key, collection)
+  //       ? v
+  //       : notSetValue;
+  //   };
+  // }
+  // filterSequence0.__iterateUncached = function (fn, reverse) {
+  //   let iterations = 0;
+  //   collection.__iterate((v, k, c) => {
+  //     if (!predicate.call(context, v, k, c)) {
+  //       iterations++;
+  //       return fn(v, useKeys ? k : iterations - 1, this);
+  //     }
+  //   }, reverse);
+  //   return iterations;
+  // };
+  // filterSequence0.__iteratorUncached = function (type, reverse) {
+  //   const iterator = collection.__iterator(ITERATE_ENTRIES, reverse);
+  //   let iterations = 0;
+  //   return new Iterator(() => {
+  //     while (true) {
+  //       const step = iterator.next();
+  //       if (step.done) {
+  //         return step;
+  //       }
+  //       const entry = step.value;
+  //       const key = entry[0];
+  //       const value = entry[1];
+  //       if (!predicate.call(context, value, key, collection)) {
+  //         return iteratorValue(type, useKeys ? key : iterations++, value, step);
+  //       }
+  //     }
+  //   });
+  // };
+  // filterSequence1.__iterateUncached = function (fn, reverse) {
+  //   let iterations = 0;
+  //   collection.__iterate((v, k, c) => {
+  //     if (predicate.call(context, v, k, c)) {
+  //       iterations++;
+  //       return fn(v, useKeys ? k : iterations - 1, this);
+  //     }
+  //   }, reverse);
+  //   return iterations;
+  // };
+  // filterSequence1.__iteratorUncached = function (type, reverse) {
+  //   const iterator = collection.__iterator(ITERATE_ENTRIES, reverse);
+  //   let iterations = 0;
+  //   return new Iterator(() => {
+  //     while (true) {
+  //       const step = iterator.next();
+  //       if (step.done) {
+  //         return step;
+  //       }
+  //       const entry = step.value;
+  //       const key = entry[0];
+  //       const value = entry[1];
+  //       if (predicate.call(context, value, key, collection)) {
+  //         return iteratorValue(type, useKeys ? key : iterations++, value, step);
+  //       }
+  //     }
+  //   });
+  // };
+  // return [filterSequence0, filterSequence1];
+}
+
 export function countByFactory(collection, grouper, context) {
   const groups = Map().asMutable();
   collection.__iterate((v, k) => {
