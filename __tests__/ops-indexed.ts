@@ -3,9 +3,12 @@ import { Collection, List, Map, Seq } from 'immutable';
 import * as jasmineCheck from 'jasmine-check';
 jasmineCheck.install();
 
+const INDEXED_TYPES = [['List', List], ['Seq.Indexed', Seq.Indexed]] as const;
+type IndexedCtorFn = <T>(values: Iterable<T>) => Collection.Indexed<T>;
+
 // Tests for methods of Collection.Indexed.  See below for additional tests that
 // also apply to Seq.
-describe.each([['List', List], ['Seq.Indexed', Seq.Indexed]])('Collection.Indexed methods on %s', (name, ctorFn: <T>(values: Iterable<T>) => Collection.Indexed<T>) => {
+describe.each(INDEXED_TYPES)('Collection.Indexed methods on %s', (name, ctorFn: IndexedCtorFn) => {
   test('does not accept a scalar', () => {
     expect(() => {
       // @ts-expect-error
@@ -47,11 +50,14 @@ describe.each([['List', List], ['Seq.Indexed', Seq.Indexed]])('Collection.Indexe
   });
 });
 
+const SEQ_LIKE_TYPES = [['List', List], ['Seq', Seq], ['Seq.Indexed', Seq.Indexed]] as const;
+type SeqLikeCtorFn = <T>(values: Iterable<T>) => Collection<any, T>;
+
 
 // Tests for methods of Collection.Indexed that also work on Seq.  Seq is an
 // unusual type because it is not a true indexed type, but it supports some of
 // the methods that are otherwise unique to indexed types.
-describe.each([['List', List], ['Seq', Seq], ['Seq.Indexed', Seq.Indexed]])('Collection.Indexed and Seq methods on %s', (name, ctorFn: <T>(values: Iterable<T>) => Collection<any, T>) => {
+describe.each(SEQ_LIKE_TYPES)('Seq-line methods on %s', (name, ctorFn: SeqLikeCtorFn) => {
   test('can getIn a deep value', () => {
     const v = ctorFn([
       Map({

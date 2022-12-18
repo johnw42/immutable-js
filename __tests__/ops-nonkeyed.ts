@@ -3,9 +3,12 @@ import { Collection, List, Map, OrderedSet, Range, Seq } from 'immutable';
 import * as jasmineCheck from 'jasmine-check';
 jasmineCheck.install();
 
+const TYPES = [['List', List], ['Seq', Seq], ['Seq.Indexed', Seq.Indexed], ['OrderedSet', OrderedSet]] as const;
+type CtorFn = <T>(values: Iterable<T>) => Collection<any, T>;
+
 // Tests for operations on non-keyed collection types that maintain the order of
 // their contents.
-describe.each([['List', List], ['Seq', Seq], ['Seq.Indexed', Seq.Indexed], ['OrderedSet', OrderedSet]])('basic Collection methods on %s', (name, ctorFn: <T>(values: Iterable<T>) => Collection<any, T>) => {
+describe.each(TYPES)('basic Collection methods on %s', (name, ctorFn: CtorFn) => {
   test('toArray provides a JS array', () => {
     const v = ctorFn(['a', 'b', 'c']);
     expect(v.toArray()).toEqual(['a', 'b', 'c']);
