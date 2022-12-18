@@ -38,6 +38,7 @@ import {
 
 import { Map } from './Map';
 import { OrderedMap } from './OrderedMap';
+import { isSet } from './predicates/isSet';
 
 export class ToKeyedSequence extends KeyedSeq {
   constructor(indexed, useKeys) {
@@ -612,7 +613,8 @@ export function concatFactory(collection, values) {
     if (
       singleton === collection ||
       (isKeyedCollection && isKeyed(singleton)) ||
-      (isIndexed(collection) && isIndexed(singleton))
+      (isIndexed(collection) && isIndexed(singleton)) ||
+      (isSet(collection) && isSet(singleton))
     ) {
       return singleton;
     }

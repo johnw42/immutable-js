@@ -193,7 +193,7 @@ Set.isSet = isSet;
 const SetPrototype = Set.prototype;
 SetPrototype[IS_SET_SYMBOL] = true;
 SetPrototype[DELETE] = SetPrototype.remove;
-SetPrototype.merge = SetPrototype.concat = SetPrototype.union;
+SetPrototype.merge = SetPrototype.union;
 SetPrototype.withMutations = withMutations;
 SetPrototype.asImmutable = asImmutable;
 SetPrototype['@@transducer/init'] = SetPrototype.asMutable = asMutable;

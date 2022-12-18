@@ -3,25 +3,17 @@ import { Collection, List, Map, OrderedSet, Range, Seq } from 'immutable';
 import * as jasmineCheck from 'jasmine-check';
 jasmineCheck.install();
 
-describe.each([[List], [Seq], [Seq.Indexed]])('basic Collection methods on %p', (ctorFn: <T>(values: Iterable<T>) => Collection<any, T>) => {
+// Tests for operations on non-keyed collection types that maintain the order of
+// their contents.
+describe.each([['List', List], ['Seq', Seq], ['Seq.Indexed', Seq.Indexed], ['OrderedSet', OrderedSet]])('basic Collection methods on %s', (name, ctorFn: <T>(values: Iterable<T>) => Collection<any, T>) => {
   test('toArray provides a JS array', () => {
     const v = ctorFn(['a', 'b', 'c']);
     expect(v.toArray()).toEqual(['a', 'b', 'c']);
   });
 
-
   test('supports toArray', () => {
     const v = ctorFn(['a', 'b', 'c']);
     expect(v.toArray()).toEqual(['a', 'b', 'c']);
-  });
-
-  test('can getIn a deep value', () => {
-    const v = ctorFn([
-      Map({
-        aKey: ctorFn(['bad', 'good']),
-      }),
-    ]);
-    expect(v.getIn([0, 'aKey', 1])).toBe('good');
   });
 
   test('returns undefined when getting a null value', () => {
@@ -30,24 +22,6 @@ describe.each([[List], [Seq], [Seq.Indexed]])('basic Collection methods on %p', 
 
     const o = ctorFn([{ a: 1 }, { b: 2 }, { c: 3 }]);
     expect(o.get(null as any)).toBe(undefined);
-  });
-
-  test('counts from the end of the list on negative index', () => {
-    const i = ctorFn([1, 2, 3, 4, 5, 6, 7]);
-    expect(i.get(-1)).toBe(7);
-    expect(i.get(-5)).toBe(3);
-    expect(i.get(-9)).toBe(undefined);
-    expect(i.get(-999, 1000)).toBe(1000);
-  });
-
-  test('coerces numeric-string keys', () => {
-    // Of course, TypeScript protects us from this, so cast to "any" to test.
-    const i: any = ctorFn([1, 2, 3, 4, 5, 6]);
-    expect(i.get('1')).toBe(2);
-    // Like array, string negative numbers do not qualify
-    expect(i.get('-1')).toBe(undefined);
-    // Like array, string floating point numbers do not qualify
-    expect(i.get('1.0')).toBe(undefined);
   });
 
   test('uses not set value for string index', () => {
@@ -148,14 +122,6 @@ describe.each([[List], [Seq], [Seq.Indexed]])('basic Collection methods on %p', 
     expect(l[Symbol.iterator]).toBe(l.values);
   });
 
-  test('finds values using findEntry', () => {
-    const v = ctorFn(['a', 'b', 'c', 'B', 'a']);
-    expect(v.findEntry(value => value.toUpperCase() === value)).toEqual([
-      3,
-      'B',
-    ]);
-    expect(v.findEntry(value => value.length > 1)).toBe(undefined);
-  });
 
   test('maps values', () => {
     const v = ctorFn(['a', 'b', 'c']);
@@ -163,26 +129,18 @@ describe.each([[List], [Seq], [Seq.Indexed]])('basic Collection methods on %p', 
     expect(r.toArray()).toEqual(['A', 'B', 'C']);
   });
 
-  test('ensures iter is unmodified', () => {
-    const v = ctorFn([1, 2, 3]);
-    const r = v.map((value, index, iter) => {
-      return iter.get(index - 1);
-    });
-    expect(r.toArray()).toEqual([3, 1, 2]);
-  });
-
   test('filters values', () => {
     const v: Collection<any, string> = ctorFn(['a', 'b', 'c', 'd', 'e', 'f']);
-    const r = v.filter((value, index) => index % 2 === 1);
+    const r = v.filter((value) => value.charCodeAt(0) % 2 === 0);
     expect(r.toArray()).toEqual(['b', 'd', 'f']);
   });
 
   test('partitions values', () => {
     const v: Collection<any, string> = ctorFn(['a', 'b', 'c', 'd', 'e', 'f']);
     let callCount = 0;
-    const [r0, r1] = v.partition((value, index) => {
+    const [r0, r1] = v.partition((value) => {
       ++callCount;
-      return index % 2 === 1;
+      return value.charCodeAt(0) % 2 === 0;
     });
     expect(r0.toArray()).toEqual(['a', 'c', 'e']);
     expect(r1.toArray()).toEqual(['b', 'd', 'f']);
@@ -410,18 +368,6 @@ describe.each([[List], [Seq], [Seq.Indexed]])('basic Collection methods on %p', 
     expect(newList.toJS()).toEqual([]);
   });
 
-  test('Accepts NaN for slice and concat #602', () => {
-    const list = ctorFn([]).slice(0, NaN).concat(NaN);
-    // toEqual([ NaN ])
-    expect(list.count()).toBe(1);
-    expect(isNaNValue(list.get(0))).toBe(true);
-  });
-
-  // Note: NaN is the only value not equal to itself. The isNaN() built-in
-  // function returns true for any non-numeric value, not just the NaN value.
-  function isNaNValue(value) {
-    return value !== value;
-  }
 
   describe('when slicing', () => {
     [NaN, -Infinity].forEach(zeroishValue => {
