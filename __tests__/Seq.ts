@@ -1,22 +1,6 @@
 import { isCollection, isIndexed, isKeyed, Seq } from 'immutable';
 
 describe('Seq', () => {
-  it('returns undefined if empty and first is called without default argument', () => {
-    expect(Seq().first()).toBeUndefined();
-  });
-
-  it('returns undefined if empty and last is called without default argument', () => {
-    expect(Seq().last()).toBeUndefined();
-  });
-
-  it('returns default value if empty and first is called with default argument', () => {
-    expect(Seq().first({})).toEqual({});
-  });
-
-  it('returns default value if empty and last is called with default argument', () => {
-    expect(Seq().last({})).toEqual({});
-  });
-
   it('can be empty', () => {
     expect(Seq().size).toBe(0);
   });
@@ -118,11 +102,6 @@ describe('Seq', () => {
     const dg = dog.filter(c => c !== 'o');
     const dig = dg.splice(-1, 0, 'i');
     expect(dig.toJS()).toEqual(['d', 'i', 'g']);
-  });
-
-  it('Does not infinite loop when an undefined number is passed to take', () => {
-    const list = Seq([1, 2, 3, 4, 5]);
-    expect(list.take(NaN).toJS()).toEqual([]);
   });
 
   it('Converts deeply toJS after converting to entries', () => {

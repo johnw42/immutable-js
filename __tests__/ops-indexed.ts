@@ -3,7 +3,7 @@ import { Collection, List, Map, OrderedSet, Range, Seq } from 'immutable';
 import * as jasmineCheck from 'jasmine-check';
 jasmineCheck.install();
 
-describe.each([[List], [Seq.Indexed]])('operations on %p', (ctorFn: <T>(values: Iterable<T>) => List<T> | Seq.Indexed<T>) => {
+describe.each([[List], [Seq.Indexed]])('Collection.Indexed methods on %p', (ctorFn: <T>(values: Iterable<T>) => List<T> | Seq.Indexed<T>) => {
   test('toArray provides a JS array', () => {
     const v = ctorFn(['a', 'b', 'c']);
     expect(v.toArray()).toEqual(['a', 'b', 'c']);
@@ -11,7 +11,8 @@ describe.each([[List], [Seq.Indexed]])('operations on %p', (ctorFn: <T>(values: 
 
   test('does not accept a scalar', () => {
     expect(() => {
-      ctorFn(3 as any);
+      // @ts-expect-error
+      ctorFn(3);
     }).toThrow('Expected Array or collection object of values: 3');
   });
 
@@ -107,6 +108,22 @@ describe.each([[List], [Seq.Indexed]])('operations on %p', (ctorFn: <T>(values: 
     const v = ctorFn(['a', 'b', 'c']);
     expect(v.first()).toBe('a');
     expect(v.last()).toBe('c');
+  });
+
+  it('returns undefined if empty and first is called without default argument', () => {
+    expect(ctorFn([]).first()).toBeUndefined();
+  });
+
+  it('returns undefined if empty and last is called without default argument', () => {
+    expect(ctorFn([]).last()).toBeUndefined();
+  });
+
+  it('returns default value if empty and first is called with default argument', () => {
+    expect(ctorFn([]).first({})).toEqual({});
+  });
+
+  it('returns default value if empty and last is called with default argument', () => {
+    expect(ctorFn([]).last({})).toEqual({});
   });
 
   test('slice helpers make for easier to read code', () => {
@@ -418,6 +435,11 @@ describe.each([[List], [Seq.Indexed]])('operations on %p', (ctorFn: <T>(values: 
     expect(v2.rest().count()).toBe(1799);
     expect(v2.last()).toBe(1899);
     expect(v2.butLast().count()).toBe(1799);
+  });
+
+  it('Does not infinite loop when an undefined number is passed to take', () => {
+    const list = ctorFn([1, 2, 3, 4, 5]);
+    expect(list.take(NaN).toJS()).toEqual([]);
   });
 
   test('Does not infinite loop when sliced with NaN #459', () => {
