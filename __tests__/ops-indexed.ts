@@ -396,8 +396,10 @@ describe.each([[List], [Seq.Indexed]])('operations on %p', (ctorFn: <T>(values: 
     expect(v1.concat(4).toArray()).toEqual([1, 2, 3, 4]);
   });
 
-  test('concat returns ctorFn-coerced arg when concat to empty', () => {
-    expect(ctorFn([]).concat([1, 2, 3]).toArray()).toEqual([1, 2, 3]);
+  test('concat returns coerced arg when concat to empty', () => {
+    const r = ctorFn([]).concat([1, 2, 3]);
+    expect(r.toArray()).toEqual([1, 2, 3]);
+    expect(r instanceof ctorFn).toBe(true);
   });
 
   test('concat does not spread in string characters', () => {

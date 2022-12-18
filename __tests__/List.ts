@@ -31,18 +31,6 @@ describe('List', () => {
     expect(v.get(2)).toBe('c');
   });
 
-  it('toArray provides a JS array', () => {
-    const v = List.of('a', 'b', 'c');
-    expect(v.toArray()).toEqual(['a', 'b', 'c']);
-  });
-
-  it('does not accept a scalar', () => {
-    expect(() => {
-      // @ts-expect-error
-      List(3);
-    }).toThrow('Expected Array or collection object of values: 3');
-  });
-
   it('accepts an array', () => {
     const v = List(['a', 'b', 'c']);
     expect(v.get(1)).toBe('b');
@@ -162,22 +150,6 @@ describe('List', () => {
     ]);
   });
 
-  it('returns undefined when getting a null value', () => {
-    const v = List([1, 2, 3]);
-    expect(v.get(null as any)).toBe(undefined);
-
-    const o = List([{ a: 1 }, { b: 2 }, { c: 3 }]);
-    expect(o.get(null as any)).toBe(undefined);
-  });
-
-  it('counts from the end of the list on negative index', () => {
-    const i = List.of(1, 2, 3, 4, 5, 6, 7);
-    expect(i.get(-1)).toBe(7);
-    expect(i.get(-5)).toBe(3);
-    expect(i.get(-9)).toBe(undefined);
-    expect(i.get(-999, 1000)).toBe(1000);
-  });
-
   it('coerces numeric-string keys', () => {
     // Of course, TypeScript protects us from this, so cast to "any" to test.
     const i: any = List.of(1, 2, 3, 4, 5, 6);
@@ -187,49 +159,6 @@ describe('List', () => {
     expect(i.get('-1')).toBe(undefined);
     // Like array, string floating point numbers do not qualify
     expect(i.get('1.0')).toBe(undefined);
-  });
-
-  it('uses not set value for string index', () => {
-    const list: any = List();
-    expect(list.get('stringKey', 'NOT-SET')).toBe('NOT-SET');
-  });
-
-  it('uses not set value for index {}', () => {
-    const list: any = List.of(1, 2, 3, 4, 5);
-    expect(list.get({}, 'NOT-SET')).toBe('NOT-SET');
-  });
-
-  it('uses not set value for index void 0', () => {
-    const list: any = List.of(1, 2, 3, 4, 5);
-    expect(list.get(void 0, 'NOT-SET')).toBe('NOT-SET');
-  });
-
-  it('uses not set value for index undefined', () => {
-    const list: any = List.of(1, 2, 3, 4, 5);
-    expect(list.get(undefined, 'NOT-SET')).toBe('NOT-SET');
-  });
-
-  it('doesnt coerce empty strings to index 0', () => {
-    const list: any = List.of(1, 2, 3);
-    expect(list.has('')).toBe(false);
-  });
-
-  it('doesnt contain elements at non-empty string keys', () => {
-    const list: any = List.of(1, 2, 3, 4, 5);
-    expect(list.has('str')).toBe(false);
-  });
-
-  it('hasIn doesnt contain elements at non-empty string keys', () => {
-    const list: any = List.of(1, 2, 3, 4, 5);
-    expect(list.hasIn(['str'])).toBe(false);
-  });
-
-  it('hasIn doesnt throw for bad key-path', () => {
-    const list = List.of(1, 2, 3, 4, 5);
-    expect(list.hasIn([1, 2, 3])).toBe(false);
-
-    const list2 = List([{}]);
-    expect(list2.hasIn([0, 'bad'])).toBe(false);
   });
 
   it('setting creates a new instance', () => {
@@ -250,32 +179,6 @@ describe('List', () => {
     expect(v3.size).toBe(3);
   });
 
-  it('get helpers make for easier to read code', () => {
-    const v = List.of('a', 'b', 'c');
-    expect(v.first()).toBe('a');
-    expect(v.get(1)).toBe('b');
-    expect(v.last()).toBe('c');
-  });
-
-  it('slice helpers make for easier to read code', () => {
-    const v0 = List.of('a', 'b', 'c');
-    const v1 = List.of('a', 'b');
-    const v2 = List.of('a');
-    const v3 = List();
-
-    expect(v0.rest().toArray()).toEqual(['b', 'c']);
-    expect(v0.butLast().toArray()).toEqual(['a', 'b']);
-
-    expect(v1.rest().toArray()).toEqual(['b']);
-    expect(v1.butLast().toArray()).toEqual(['a']);
-
-    expect(v2.rest().toArray()).toEqual([]);
-    expect(v2.butLast().toArray()).toEqual([]);
-
-    expect(v3.rest().toArray()).toEqual([]);
-    expect(v3.butLast().toArray()).toEqual([]);
-  });
-
   it('can set at arbitrary indices', () => {
     const v0 = List.of('a', 'b', 'c');
     const v1 = v0.set(1, 'B'); // within existing tail
@@ -292,15 +195,6 @@ describe('List', () => {
     expectedArray[1023] = 'g';
     expectedArray[1024] = 'h';
     expect(v7.toArray()).toEqual(expectedArray);
-  });
-
-  it('can contain a large number of indices', () => {
-    const r = Range(0, 20000).toList();
-    let iterations = 0;
-    r.forEach(v => {
-      expect(v).toBe(iterations);
-      iterations++;
-    });
   });
 
   it('describes a dense list', () => {
@@ -373,11 +267,6 @@ describe('List', () => {
       [9, 9],
       [10, undefined],
     ]);
-  });
-
-  it('has the same iterator function for values', () => {
-    const l = List(['a', 'b', 'c']);
-    expect(l[Symbol.iterator]).toBe(l.values);
   });
 
   it('push inserts at highest index', () => {
@@ -514,194 +403,10 @@ describe('List', () => {
     }
   );
 
-  it('finds values using indexOf', () => {
-    const v = List.of('a', 'b', 'c', 'b', 'a');
-    expect(v.indexOf('b')).toBe(1);
-    expect(v.indexOf('c')).toBe(2);
-    expect(v.indexOf('d')).toBe(-1);
-  });
-
-  it('finds values using lastIndexOf', () => {
-    const v = List.of('a', 'b', 'c', 'b', 'a');
-    expect(v.lastIndexOf('b')).toBe(3);
-    expect(v.lastIndexOf('c')).toBe(2);
-    expect(v.lastIndexOf('d')).toBe(-1);
-  });
-
-  it('finds values using findIndex', () => {
-    const v = List.of('a', 'b', 'c', 'B', 'a');
-    expect(v.findIndex(value => value.toUpperCase() === value)).toBe(3);
-    expect(v.findIndex(value => value.length > 1)).toBe(-1);
-  });
-
-  it('finds values using findEntry', () => {
-    const v = List.of('a', 'b', 'c', 'B', 'a');
-    expect(v.findEntry(value => value.toUpperCase() === value)).toEqual([
-      3,
-      'B',
-    ]);
-    expect(v.findEntry(value => value.length > 1)).toBe(undefined);
-  });
-
-  it('maps values', () => {
-    const v = List.of('a', 'b', 'c');
-    const r = v.map(value => value.toUpperCase());
-    expect(r.toArray()).toEqual(['A', 'B', 'C']);
-  });
-
   it('map no-ops return the same reference', () => {
     const v = List.of('a', 'b', 'c');
     const r = v.map(value => value);
     expect(r).toBe(v);
-  });
-
-  it('ensures iter is unmodified', () => {
-    const v = List.of(1, 2, 3);
-    const r = v.map((value, index, iter) => {
-      return iter.get(index - 1);
-    });
-    expect(r.toArray()).toEqual([3, 1, 2]);
-  });
-
-  it('filters values', () => {
-    const v = List.of('a', 'b', 'c', 'd', 'e', 'f');
-    const r = v.filter((value, index) => index % 2 === 1);
-    expect(r.toArray()).toEqual(['b', 'd', 'f']);
-  });
-
-  it('partitions values', () => {
-    const v = List.of('a', 'b', 'c', 'd', 'e', 'f');
-    const r = v
-      .partition((value, index) => index % 2 === 1)
-      .map(part => part.toArray());
-    expect(r).toEqual([
-      ['a', 'c', 'e'],
-      ['b', 'd', 'f'],
-    ]);
-  });
-
-  it('filters values based on type', () => {
-    class A {}
-    class B extends A {
-      b(): void {
-        return;
-      }
-    }
-    class C extends A {
-      c(): void {
-        return;
-      }
-    }
-    const l1 = List<A>([new B(), new C(), new B(), new C()]);
-    // tslint:disable-next-line:arrow-parens
-    const l2: List<C> = l1.filter((v): v is C => v instanceof C);
-    expect(l2.size).toEqual(2);
-    expect(l2.every(v => v instanceof C)).toBe(true);
-  });
-
-  it('partitions values based on type', () => {
-    class A {}
-    class B extends A {
-      b(): void {
-        return;
-      }
-    }
-    class C extends A {
-      c(): void {
-        return;
-      }
-    }
-    const l1 = List<A>([new B(), new C(), new B(), new C()]);
-    // tslint:disable-next-line:arrow-parens
-    const [la, lc]: [List<A>, List<C>] = l1.partition(
-      (v): v is C => v instanceof C
-    );
-    expect(la.size).toEqual(2);
-    expect(la.some(v => v instanceof C)).toBe(false);
-    expect(lc.size).toEqual(2);
-    expect(lc.every(v => v instanceof C)).toBe(true);
-  });
-
-  it('reduces values', () => {
-    const v = List.of(1, 10, 100);
-    const r = v.reduce<number>((reduction, value) => reduction + value);
-    expect(r).toEqual(111);
-    const r2 = v.reduce((reduction, value) => reduction + value, 1000);
-    expect(r2).toEqual(1111);
-  });
-
-  it('reduces from the right', () => {
-    const v = List.of('a', 'b', 'c');
-    const r = v.reduceRight((reduction, value) => reduction + value);
-    expect(r).toEqual('cba');
-    const r2 = v.reduceRight((reduction, value) => reduction + value, 'x');
-    expect(r2).toEqual('xcba');
-  });
-
-  it('takes maximum number', () => {
-    const v = List.of('a', 'b', 'c');
-    const r = v.take(Number.MAX_SAFE_INTEGER);
-    expect(r).toBe(v);
-  });
-
-  it('takes and skips values', () => {
-    const v = List.of('a', 'b', 'c', 'd', 'e', 'f');
-    const r = v.skip(2).take(2);
-    expect(r.toArray()).toEqual(['c', 'd']);
-  });
-
-  it('takes and skips no-ops return same reference', () => {
-    const v = List.of('a', 'b', 'c', 'd', 'e', 'f');
-    const r = v.skip(0).take(6);
-    expect(r).toBe(v);
-  });
-
-  it('takeLast and skipLast values', () => {
-    const v = List.of('a', 'b', 'c', 'd', 'e', 'f');
-    const r = v.skipLast(1).takeLast(2);
-    expect(r.toArray()).toEqual(['d', 'e']);
-  });
-
-  it('takeLast and skipLast no-ops return same reference', () => {
-    const v = List.of('a', 'b', 'c', 'd', 'e', 'f');
-    const r = v.skipLast(0).takeLast(6);
-    expect(r).toBe(v);
-  });
-
-  it('efficiently chains array methods', () => {
-    const v = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
-
-    const r = v
-      .filter(x => x % 2 === 0)
-      .skip(2)
-      .map(x => x * x)
-      .take(3)
-      .reduce((a: number, b: number) => a + b, 0);
-
-    expect(r).toEqual(200);
-  });
-
-  it('can convert to a map', () => {
-    const v = List.of('a', 'b', 'c');
-    const m = v.toMap();
-    expect(m.size).toBe(3);
-    expect(m.get(1)).toBe('b');
-  });
-
-  it('reverses', () => {
-    const v = List.of('a', 'b', 'c');
-    expect(v.reverse().toArray()).toEqual(['c', 'b', 'a']);
-  });
-
-  it('ensures equality', () => {
-    // Make a sufficiently long list.
-    const a = Array(100).join('abcdefghijklmnopqrstuvwxyz').split('');
-    const v1 = List(a);
-    const v2 = List(a);
-    // tslint:disable-next-line: triple-equals
-    expect(v1 == v2).not.toBe(true);
-    expect(v1 === v2).not.toBe(true);
-    expect(v1.equals(v2)).toBe(true);
   });
 
   it('works with insert', () => {
@@ -719,86 +424,6 @@ describe('List', () => {
     const o = v.insert(-4, 'f');
     expect(o.size).toBe(4);
     expect(o.get(0)).toBe('f');
-  });
-
-  // TODO: assert that findIndex only calls the function as much as it needs to.
-
-  it('forEach iterates in the correct order', () => {
-    let n = 0;
-    const a: Array<any> = [];
-    const v = List.of(0, 1, 2, 3, 4);
-    v.forEach(x => {
-      a.push(x);
-      n++;
-    });
-    expect(n).toBe(5);
-    expect(a.length).toBe(5);
-    expect(a).toEqual([0, 1, 2, 3, 4]);
-  });
-
-  it('forEach iteration terminates when callback returns false', () => {
-    const a: Array<any> = [];
-    function count(x) {
-      if (x > 2) {
-        return false;
-      }
-      a.push(x);
-    }
-    const v = List.of(0, 1, 2, 3, 4);
-    v.forEach(count);
-    expect(a).toEqual([0, 1, 2]);
-  });
-
-  it('concat works like Array.prototype.concat', () => {
-    const v1 = List([1, 2, 3]);
-    const v2 = v1.concat(
-      4,
-      List([5, 6]),
-      [7, 8],
-      Seq([9, 10]),
-      Set.of(11, 12),
-      null as any
-    );
-    expect(v1.toArray()).toEqual([1, 2, 3]);
-    expect(v2.toArray()).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, null]);
-  });
-
-  it('concat works like Array.prototype.concat even for IE11', () => {
-    const v1 = List([1, 2, 3]);
-    const a = [4];
-
-    // remove Symbol.iterator as IE11 does not handle it.
-    // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/@@iterator#browser_compatibility
-    // @ts-expect-error -- simulate IE11
-    a[Symbol.iterator] = undefined;
-
-    const v2 = v1.concat(a);
-    expect(v1.toArray()).toEqual([1, 2, 3]);
-    expect(v2.toArray()).toEqual([1, 2, 3, 4]);
-  });
-
-  it('concat returns self when no changes', () => {
-    const v1 = List([1, 2, 3]);
-    expect(v1.concat([])).toBe(v1);
-  });
-
-  it('concat returns arg when concat to empty', () => {
-    const v1 = List([1, 2, 3]);
-    expect(List().concat(v1)).toBe(v1);
-  });
-
-  it('concats a single value', () => {
-    const v1 = List([1, 2, 3]);
-    expect(v1.concat(4)).toEqual(List([1, 2, 3, 4]));
-  });
-
-  it('concat returns List-coerced arg when concat to empty', () => {
-    expect(List().concat([1, 2, 3])).toEqual(List([1, 2, 3]));
-  });
-
-  it('concat does not spread in string characters', () => {
-    const v1 = List([1, 2, 3]);
-    expect(v1.concat('abcdef')).toEqual(List([1, 2, 3, 'abcdef']));
   });
 
   it('allows chained mutations', () => {
@@ -890,98 +515,5 @@ describe('List', () => {
     expect(v3.toArray()).toEqual(
       list.slice(0, 3).concat([undefined, undefined, undefined] as any)
     );
-  });
-
-  it('can be efficiently sliced', () => {
-    const v1 = Range(0, 2000).toList();
-    const v2 = v1.slice(100, -100).toList();
-    const v3 = v2.slice(0, Infinity);
-    expect(v1.size).toBe(2000);
-    expect(v2.size).toBe(1800);
-    expect(v3.size).toBe(1800);
-    expect(v2.first()).toBe(100);
-    expect(v2.rest().size).toBe(1799);
-    expect(v2.last()).toBe(1899);
-    expect(v2.butLast().size).toBe(1799);
-  });
-
-  [NaN, Infinity, -Infinity].forEach(zeroishValue => {
-    it(`treats ${zeroishValue} like zero when setting size`, () => {
-      const v1 = List.of('a', 'b', 'c');
-      const v2 = v1.setSize(zeroishValue);
-      expect(v2.size).toBe(0);
-    });
-  });
-
-  it('Does not infinite loop when sliced with NaN #459', () => {
-    const list = List([1, 2, 3, 4, 5]);
-    const newList = list.slice(0, NaN);
-    expect(newList.toJS()).toEqual([]);
-  });
-
-  it('Accepts NaN for slice and concat #602', () => {
-    const list = List().slice(0, NaN).concat(NaN);
-    // toEqual([ NaN ])
-    expect(list.size).toBe(1);
-    expect(isNaNValue(list.get(0))).toBe(true);
-  });
-
-  // Note: NaN is the only value not equal to itself. The isNaN() built-in
-  // function returns true for any non-numeric value, not just the NaN value.
-  function isNaNValue(value) {
-    return value !== value;
-  }
-
-  describe('when slicing', () => {
-    [NaN, -Infinity].forEach(zeroishValue => {
-      it(`considers a ${zeroishValue} begin argument to be zero`, () => {
-        const v1 = List.of('a', 'b', 'c');
-        const v2 = v1.slice(zeroishValue, 3);
-        expect(v2.size).toBe(3);
-      });
-      it(`considers a ${zeroishValue} end argument to be zero`, () => {
-        const v1 = List.of('a', 'b', 'c');
-        const v2 = v1.slice(0, zeroishValue);
-        expect(v2.size).toBe(0);
-      });
-      it(`considers ${zeroishValue} begin and end arguments to be zero`, () => {
-        const v1 = List.of('a', 'b', 'c');
-        const v2 = v1.slice(zeroishValue, zeroishValue);
-        expect(v2.size).toBe(0);
-      });
-    });
-  });
-
-  describe('Iterator', () => {
-    const pInt = gen.posInt;
-
-    check.it('iterates through List', [pInt, pInt], (start, len) => {
-      const l1 = Range(0, start + len).toList();
-      const l2: List<number> = l1.slice(start, start + len);
-      expect(l2.size).toBe(len);
-      const valueIter = l2.values();
-      const keyIter = l2.keys();
-      const entryIter = l2.entries();
-      for (let ii = 0; ii < len; ii++) {
-        expect(valueIter.next().value).toBe(start + ii);
-        expect(keyIter.next().value).toBe(ii);
-        expect(entryIter.next().value).toEqual([ii, start + ii]);
-      }
-    });
-
-    check.it('iterates through List in reverse', [pInt, pInt], (start, len) => {
-      const l1 = Range(0, start + len).toList();
-      const l2: List<number> = l1.slice(start, start + len);
-      const s = l2.toSeq().reverse(); // impl calls List.__iterator(REVERSE)
-      expect(s.size).toBe(len);
-      const valueIter = s.values();
-      const keyIter = s.keys();
-      const entryIter = s.entries();
-      for (let ii = 0; ii < len; ii++) {
-        expect(valueIter.next().value).toBe(start + len - 1 - ii);
-        expect(keyIter.next().value).toBe(ii);
-        expect(entryIter.next().value).toEqual([ii, start + len - 1 - ii]);
-      }
-    });
   });
 });
