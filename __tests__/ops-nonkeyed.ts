@@ -1,4 +1,4 @@
-import { Collection, List, Map, OrderedSet, Range, Seq } from 'immutable';
+import { Collection, List, OrderedSet, Range, Seq } from 'immutable';
 
 import * as jasmineCheck from 'jasmine-check';
 jasmineCheck.install();

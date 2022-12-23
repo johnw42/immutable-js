@@ -1,118 +1,29 @@
 import { fromJS, is, List, Map, OrderedSet, Seq, Set } from 'immutable';
 
-describe('Set', () => {
-  it('accepts array of values', () => {
-    const s = Set([1, 2, 3]);
-    expect(s.has(1)).toBe(true);
-    expect(s.has(2)).toBe(true);
-    expect(s.has(3)).toBe(true);
-    expect(s.has(4)).toBe(false);
-  });
+const TYPES = [
+  ['Set', Set, OrderedSet],
+  ['OrderedSet', OrderedSet, Set],
+] as const;
 
-  it('accepts array-like of values', () => {
-    const s = Set<number | undefined>({ length: 3, 2: 3 });
-    expect(s.size).toBe(2);
-    expect(s.has(undefined)).toBe(true);
-    expect(s.has(3)).toBe(true);
-    expect(s.has(2)).toBe(false);
-  });
+interface CtorFn {
+  <T>(values?: Iterable<T> | ArrayLike<T>): Set<T>;
+  of: typeof Set.of;
+  fromKeys: typeof Set.fromKeys;
+}
 
-  it('accepts a JS (global) Set', () => {
-    const s = Set(new global.Set([1, 2, 3]));
-    expect(Set.isSet(s)).toBe(true);
-    expect(s.size).toBe(3);
-    expect(s.has(1)).toBe(true);
-    expect(s.has(2)).toBe(true);
-    expect(s.has(3)).toBe(true);
-    expect(s.has(4)).toBe(false);
-  });
+describe("Set-specific methods", () => {
+  it('expresses value equality with set sequences', () => {
+    const s1 = Set.of('A', 'B', 'C');
+    expect(s1.equals(null)).toBe(false);
 
-  it('accepts string, an array-like collection', () => {
-    const s = Set('abc');
-    expect(s.size).toBe(3);
-    expect(s.has('a')).toBe(true);
-    expect(s.has('b')).toBe(true);
-    expect(s.has('c')).toBe(true);
-    expect(s.has('abc')).toBe(false);
-  });
+    const s2 = Set.of('C', 'B', 'A');
+    expect(s1 === s2).toBe(false);
+    expect(is(s1, s2)).toBe(true);
+    expect(s1.equals(s2)).toBe(true);
 
-  it('accepts sequence of values', () => {
-    const seq = Seq([1, 2, 3]);
-    const s = Set(seq);
-    expect(s.has(1)).toBe(true);
-    expect(s.has(2)).toBe(true);
-    expect(s.has(3)).toBe(true);
-    expect(s.has(4)).toBe(false);
-  });
-
-  it('accepts a keyed Seq as a set of entries', () => {
-    const seq = Seq({ a: null, b: null, c: null }).flip();
-    const s = Set(seq);
-    expect(s.toArray()).toEqual([
-      [null, 'a'],
-      [null, 'b'],
-      [null, 'c'],
-    ]);
-    // Explicitly getting the values sequence
-    const s2 = Set(seq.valueSeq());
-    expect(s2.toArray()).toEqual(['a', 'b', 'c']);
-    // toSet() does this for you.
-    const v3 = seq.toSet();
-    expect(v3.toArray()).toEqual(['a', 'b', 'c']);
-  });
-
-  it('accepts object keys', () => {
-    const s = Set.fromKeys({ a: null, b: null, c: null });
-    expect(s.has('a')).toBe(true);
-    expect(s.has('b')).toBe(true);
-    expect(s.has('c')).toBe(true);
-    expect(s.has('d')).toBe(false);
-  });
-
-  it('accepts sequence keys', () => {
-    const seq = Seq({ a: null, b: null, c: null });
-    const s = Set.fromKeys(seq);
-    expect(s.has('a')).toBe(true);
-    expect(s.has('b')).toBe(true);
-    expect(s.has('c')).toBe(true);
-    expect(s.has('d')).toBe(false);
-  });
-
-  it('accepts explicit values', () => {
-    const s = Set([1, 2, 3]);
-    expect(s.has(1)).toBe(true);
-    expect(s.has(2)).toBe(true);
-    expect(s.has(3)).toBe(true);
-    expect(s.has(4)).toBe(false);
-  });
-
-  it('converts back to JS array', () => {
-    const s = Set([1, 2, 3]);
-    expect(s.toArray()).toEqual([1, 2, 3]);
-  });
-
-  it('converts back to JS object', () => {
-    const s = Set.of('a', 'b', 'c');
-    expect(s.toObject()).toEqual({ a: 'a', b: 'b', c: 'c' });
-  });
-
-  it('maps no-ops return the same reference', () => {
-    const s = Set([1, 2, 3]);
-    const r = s.map(value => value);
-    expect(r).toBe(s);
-  });
-
-  it('maps should produce new set if values changed', () => {
-    const s = Set([1, 2, 3]);
-    expect(s.has(4)).toBe(false);
-    expect(s.size).toBe(3);
-
-    const m = s.map(v => v + 1);
-    expect(m.has(1)).toBe(false);
-    expect(m.has(2)).toBe(true);
-    expect(m.has(3)).toBe(true);
-    expect(m.has(4)).toBe(true);
-    expect(m.size).toBe(3);
+    // Map and Set are not the same (keyed vs unkeyed)
+    const v1 = Map({ A: 'A', C: 'C', B: 'B' });
+    expect(is(s1, v1)).toBe(false);
   });
 
   it('unions an unknown collection of Sets', () => {
@@ -130,14 +41,130 @@ describe('Set', () => {
     expect(Set.intersect([abc])).toBe(abc);
     expect(Set.intersect([])).toBe(Set());
   });
+});
+
+describe.each(TYPES)('Set methods on %s', (name, ctorFn: CtorFn, otherCtor: CtorFn) => {
+  it('accepts array of values', () => {
+    const s = ctorFn([1, 2, 3]);
+    expect(s.has(1)).toBe(true);
+    expect(s.has(2)).toBe(true);
+    expect(s.has(3)).toBe(true);
+    expect(s.has(4)).toBe(false);
+  });
+
+  it('accepts array-like of values', () => {
+    const s = ctorFn<number | undefined>({ length: 3, 2: 3 });
+    expect(s.size).toBe(2);
+    expect(s.has(undefined)).toBe(true);
+    expect(s.has(3)).toBe(true);
+    expect(s.has(2)).toBe(false);
+  });
+
+  it('accepts a JS (global) ctorFn', () => {
+    const s = ctorFn(new global.Set([1, 2, 3]));
+    expect(Set.isSet(s)).toBe(true);
+    expect(s.size).toBe(3);
+    expect(s.has(1)).toBe(true);
+    expect(s.has(2)).toBe(true);
+    expect(s.has(3)).toBe(true);
+    expect(s.has(4)).toBe(false);
+  });
+
+  it('accepts string, an array-like collection', () => {
+    const s = ctorFn('abc');
+    expect(s.size).toBe(3);
+    expect(s.has('a')).toBe(true);
+    expect(s.has('b')).toBe(true);
+    expect(s.has('c')).toBe(true);
+    expect(s.has('abc')).toBe(false);
+  });
+
+  it('accepts sequence of values', () => {
+    const seq = Seq([1, 2, 3]);
+    const s = ctorFn(seq);
+    expect(s.has(1)).toBe(true);
+    expect(s.has(2)).toBe(true);
+    expect(s.has(3)).toBe(true);
+    expect(s.has(4)).toBe(false);
+  });
+
+  it('accepts a keyed Seq as a set of entries', () => {
+    const seq = Seq({ a: null, b: null, c: null }).flip();
+    const s = ctorFn(seq);
+    expect(s.toArray()).toEqual([
+      [null, 'a'],
+      [null, 'b'],
+      [null, 'c'],
+    ]);
+    // Explicitly getting the values sequence
+    const s2 = ctorFn(seq.valueSeq());
+    expect(s2.toArray()).toEqual(['a', 'b', 'c']);
+    // toSet() does this for you.
+    const v3 = seq.toSet();
+    expect(v3.toArray()).toEqual(['a', 'b', 'c']);
+  });
+
+  it('accepts object keys', () => {
+    const s = ctorFn.fromKeys({ a: null, b: null, c: null });
+    expect(s.has('a')).toBe(true);
+    expect(s.has('b')).toBe(true);
+    expect(s.has('c')).toBe(true);
+    expect(s.has('d')).toBe(false);
+  });
+
+  it('accepts sequence keys', () => {
+    const seq = Seq({ a: null, b: null, c: null });
+    const s = ctorFn.fromKeys(seq);
+    expect(s.has('a')).toBe(true);
+    expect(s.has('b')).toBe(true);
+    expect(s.has('c')).toBe(true);
+    expect(s.has('d')).toBe(false);
+  });
+
+  it('accepts explicit values', () => {
+    const s = ctorFn([1, 2, 3]);
+    expect(s.has(1)).toBe(true);
+    expect(s.has(2)).toBe(true);
+    expect(s.has(3)).toBe(true);
+    expect(s.has(4)).toBe(false);
+  });
+
+  it('converts back to JS array', () => {
+    const s = ctorFn([1, 2, 3]);
+    expect(s.toArray()).toEqual([1, 2, 3]);
+  });
+
+  it('converts back to JS object', () => {
+    const s = ctorFn.of('a', 'b', 'c');
+    expect(s.toObject()).toEqual({ a: 'a', b: 'b', c: 'c' });
+  });
+
+  it('maps no-ops return the same reference', () => {
+    const s = ctorFn([1, 2, 3]);
+    const r = s.map(value => value);
+    expect(r).toBe(s);
+  });
+
+  it('maps should produce new set if values changed', () => {
+    const s = ctorFn([1, 2, 3]);
+    expect(s.has(4)).toBe(false);
+    expect(s.size).toBe(3);
+
+    const m = s.map(v => v + 1);
+    expect(m.has(1)).toBe(false);
+    expect(m.has(2)).toBe(true);
+    expect(m.has(3)).toBe(true);
+    expect(m.has(4)).toBe(true);
+    expect(m.size).toBe(3);
+  });
 
   it('concatenates strings using union', () => {
-    const s = Set(['one', 'two']);
+    const s = ctorFn(['one', 'two']);
     expect(s.union('three').toArray()).toEqual(['one', 'two', 'three']);
   });
 
   it('iterates values', () => {
-    const s = Set([1, 2, 3]);
+    const s = ctorFn([1, 2, 3]);
     const iterator = jest.fn();
     s.forEach(iterator);
     expect(iterator.mock.calls).toEqual([
@@ -148,49 +175,51 @@ describe('Set', () => {
   });
 
   it('has the same iterator function for keys and values', () => {
-    const s = Set([1, 2, 3]);
+    const s = ctorFn([1, 2, 3]);
     expect(s[Symbol.iterator]).toBe(s.keys);
     expect(s[Symbol.iterator]).toBe(s.values);
   });
 
   it('unions two sets', () => {
-    const s1 = Set.of('a', 'b', 'c');
-    const s2 = Set.of('d', 'b', 'wow');
+    const s1 = ctorFn.of('a', 'b', 'c');
+    const s2 = ctorFn.of('d', 'b', 'wow');
     const s3 = s1.union(s2);
     expect(s3.toArray()).toEqual(['a', 'b', 'c', 'd', 'wow']);
   });
 
   it('returns self when union results in no-op', () => {
-    const s1 = Set.of('a', 'b', 'c');
-    const s2 = Set.of('c', 'a');
+    const s1 = ctorFn.of('a', 'b', 'c');
+    const s2 = ctorFn.of('c', 'a');
     const s3 = s1.union(s2);
     expect(s3).toBe(s1);
   });
 
   it('returns arg when union results in no-op', () => {
-    const s1 = Set();
-    const s2 = Set.of('a', 'b', 'c');
+    const s1 = ctorFn();
+    const s2 = ctorFn.of('a', 'b', 'c');
     const s3 = s1.union(s2);
     expect(s3).toBe(s2);
   });
 
   it('unions a set and another collection and returns a set', () => {
-    const s1 = Set([1, 2, 3]);
-    const emptySet = Set();
+    const s1 = ctorFn([1, 2, 3]);
+    const emptySet = ctorFn();
     const l = List([1, 2, 3]);
     const s2 = s1.union(l);
     const s3 = emptySet.union(l);
-    const o = OrderedSet([1, 2, 3]);
+    const o = otherCtor([1, 2, 3]);
     const s4 = s1.union(o);
     const s5 = emptySet.union(o);
     expect(Set.isSet(s2)).toBe(true);
     expect(Set.isSet(s3)).toBe(true);
-    expect(Set.isSet(s4) && !OrderedSet.isOrderedSet(s4)).toBe(true);
-    expect(Set.isSet(s5) && !OrderedSet.isOrderedSet(s5)).toBe(true);
+    expect(Set.isSet(s4)).toBe(true);
+    expect(Set.isSet(s5)).toBe(true);
+    expect(OrderedSet.isOrderedSet(s4)).toBe(ctorFn === OrderedSet);
+    expect(OrderedSet.isOrderedSet(s5)).toBe(ctorFn === OrderedSet);
   });
 
   it('is persistent to adds', () => {
-    const s1 = Set();
+    const s1 = ctorFn();
     const s2 = s1.add('a');
     const s3 = s2.add('b');
     const s4 = s3.add('c');
@@ -203,7 +232,7 @@ describe('Set', () => {
   });
 
   it('is persistent to deletes', () => {
-    const s1 = Set();
+    const s1 = ctorFn();
     const s2 = s1.add('a');
     const s3 = s2.add('b');
     const s4 = s3.add('c');
@@ -218,50 +247,33 @@ describe('Set', () => {
   });
 
   it('deletes down to empty set', () => {
-    const s = Set.of('A').remove('A');
-    expect(s).toBe(Set());
+    const s = ctorFn.of('A').remove('A');
+    expect(s).toBe(ctorFn());
   });
 
   it('unions multiple sets', () => {
-    const s = Set.of('A', 'B', 'C').union(
-      Set.of('C', 'D', 'E'),
-      Set.of('D', 'B', 'F')
-    );
-    expect(s).toEqual(Set.of('A', 'B', 'C', 'D', 'E', 'F'));
+    const s = ctorFn
+      .of('A', 'B', 'C')
+      .union(ctorFn.of('C', 'D', 'E'), ctorFn.of('D', 'B', 'F'));
+    expect(s).toEqual(ctorFn.of('A', 'B', 'C', 'D', 'E', 'F'));
   });
 
   it('intersects multiple sets', () => {
-    const s = Set.of('A', 'B', 'C').intersect(
-      Set.of('B', 'C', 'D'),
-      Set.of('A', 'C', 'E')
-    );
-    expect(s).toEqual(Set.of('C'));
+    const s = ctorFn
+      .of('A', 'B', 'C')
+      .intersect(ctorFn.of('B', 'C', 'D'), ctorFn.of('A', 'C', 'E'));
+    expect(s).toEqual(ctorFn.of('C'));
   });
 
   it('diffs multiple sets', () => {
-    const s = Set.of('A', 'B', 'C').subtract(
-      Set.of('C', 'D', 'E'),
-      Set.of('D', 'B', 'F')
-    );
-    expect(s).toEqual(Set.of('A'));
-  });
-
-  it('expresses value equality with set sequences', () => {
-    const s1 = Set.of('A', 'B', 'C');
-    expect(s1.equals(null)).toBe(false);
-
-    const s2 = Set.of('C', 'B', 'A');
-    expect(s1 === s2).toBe(false);
-    expect(is(s1, s2)).toBe(true);
-    expect(s1.equals(s2)).toBe(true);
-
-    // Map and Set are not the same (keyed vs unkeyed)
-    const v1 = Map({ A: 'A', C: 'C', B: 'B' });
-    expect(is(s1, v1)).toBe(false);
+    const s = ctorFn
+      .of('A', 'B', 'C')
+      .subtract(ctorFn.of('C', 'D', 'E'), ctorFn.of('D', 'B', 'F'));
+    expect(s).toEqual(ctorFn.of('A'));
   });
 
   it('can use union in a withMutation', () => {
-    const js = Set()
+    const js = ctorFn()
       .withMutations(set => {
         set.union(['a']);
         set.add('b');
@@ -271,7 +283,7 @@ describe('Set', () => {
   });
 
   it('can determine if an array is a subset', () => {
-    const s = Set.of('A', 'B', 'C');
+    const s = ctorFn.of('A', 'B', 'C');
     expect(s.isSuperset(['B', 'C'])).toBe(true);
     expect(s.isSuperset(['B', 'C', 'D'])).toBe(false);
   });
@@ -282,7 +294,7 @@ describe('Set', () => {
       const b = Symbol();
       const c = Symbol();
 
-      const symbolSet = Set([a, b, c, a, b, c, a, b, c, a, b, c]);
+      const symbolSet = ctorFn([a, b, c, a, b, c, a, b, c, a, b, c]);
       expect(symbolSet.size).toBe(3);
       expect(symbolSet.has(b)).toBe(true);
       expect(symbolSet.get(c)).toEqual(c);
@@ -304,7 +316,7 @@ describe('Set', () => {
         Symbol('c'),
       ];
 
-      const symbolSet = Set(manySymbols);
+      const symbolSet = ctorFn(manySymbols);
       expect(symbolSet.size).toBe(12);
       expect(symbolSet.has(manySymbols[10])).toBe(true);
       expect(symbolSet.get(manySymbols[10])).toEqual(manySymbols[10]);
@@ -312,23 +324,23 @@ describe('Set', () => {
   });
 
   it('can use intersect after add or union in a withMutation', () => {
-    const set = Set(['a', 'd']).withMutations(s => {
+    const set = ctorFn(['a', 'd']).withMutations(s => {
       s.add('b');
       s.union(['c']);
       s.intersect(['b', 'c', 'd']);
     });
-    expect(set.toArray()).toEqual(['c', 'd', 'b']);
+    expect(set.toArray().sort()).toEqual(['b', 'c', 'd']);
   });
 
   it('can count entries that satisfy a predicate', () => {
-    const set = Set([1, 2, 3, 4, 5]);
+    const set = ctorFn([1, 2, 3, 4, 5]);
     expect(set.size).toEqual(5);
     expect(set.count()).toEqual(5);
     expect(set.count(x => x % 2 === 0)).toEqual(2);
     expect(set.count(() => true)).toEqual(5);
   });
 
-  describe('"size" should correctly reflect the number of elements in a Set', () => {
+  describe('"size" should correctly reflect the number of elements in a ctorFn', () => {
     describe('deduplicating custom classes that invoke fromJS() as part of equality check', () => {
       class Entity {
         entityId: string;
@@ -348,7 +360,7 @@ describe('Set', () => {
         }
       }
       it('with mutations', () => {
-        const testSet = Set().withMutations(mutableSet => {
+        const testSet = ctorFn().withMutations(mutableSet => {
           mutableSet.add(new Entity('hello', 'world'));
           mutableSet.add(new Entity('testing', 'immutable'));
           mutableSet.add(new Entity('hello', 'world'));
@@ -356,7 +368,7 @@ describe('Set', () => {
         expect(testSet.size).toEqual(2);
       });
       it('without mutations', () => {
-        const testSet0 = Set();
+        const testSet0 = ctorFn();
         const testSet1 = testSet0.add(new Entity('hello', 'world'));
         const testSet2 = testSet1.add(new Entity('testing', 'immutable'));
         const testSet3 = testSet2.add(new Entity('hello', 'world'));
